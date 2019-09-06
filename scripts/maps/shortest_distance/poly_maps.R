@@ -6,18 +6,20 @@ library(janitor)
 library(sf)
 library(tmap)
 
-
+setwd('C:/Users/emeador/OneDrive - SRUC')
 # load resilience data
 
-resilience_indicators_sf <- st_read('~/OneDrive - SRUC/Data/resilience/resilience_indicators_sf.gpkg')
+
+
+resilience_indicators_sf <- st_read('Data/resilience/resilience_indicators_sf.gpkg')
 
 # Load borders data --------
 
 # load Scotland local authority
-local_authority_border <- st_read('~/OneDrive - SRUC/Data/geographic/boundaries/local_authority_border.gpkg')
+local_authority_border <- st_read('Data/geographic/boundaries/local_authority_border.gpkg')
 
 # load Scotland border
-scotland_border <- st_read('~/OneDrive - SRUC/Data/geographic/boundaries/scotland_border.gpkg')
+scotland_border <- st_read('Data/geographic/boundaries/scotland_border.gpkg')
 
 
 # Everyday Resilience -----------
@@ -51,7 +53,7 @@ every_day_map <-
 
 
 tmap_save(every_day_map, 
-          filename = '~/OneDrive - SRUC/scotland_ncr/report_outputs/figures/every_day_map.pdf', 
+          filename = 'scotland_ncr/report_outputs/figures/every_day_map.pdf', 
           width = 210, 
           height = 297, 
           unit = 'mm')
@@ -87,14 +89,15 @@ emergency_map <-
 
 
 tmap_save(emergency_map, 
-          filename = '~/OneDrive - SRUC/scotland_ncr/report_outputs/figures/emergency_map.pdf', 
+          filename = 'scotland_ncr/report_outputs/figures/emergency_map.pdf', 
           width = 210, 
           height = 297, 
           unit = 'mm')
 
 
 
-# Medical Resilience -----------
+
+F# Medical Resilience -----------
 
 
 medical_resilience <- resilience_indicators_sf %>% 
@@ -139,24 +142,24 @@ tmap_save(medical_map,
 
 # load resilience data
 
-resilience_indicators_sf <- st_read('~/OneDrive - SRUC/Data/resilience/resilience_indicators_sf.gpkg')
+resilience_indicators_sf <- st_read('Data/resilience/resilience_indicators_sf.gpkg')
 
 # Load borders data --------
 
 # load Scotland local authority
-local_authority_border <- st_read('~/OneDrive - SRUC/Data/geographic/boundaries/local_authority_border.gpkg')
+local_authority_border <- st_read('Data/geographic/boundaries/local_authority_border.gpkg')
 
 # load Scotland border
-scotland_border <- st_read('~/OneDrive - SRUC/Data/geographic/boundaries/scotland_border.gpkg')
+scotland_border <- st_read('Data/geographic/boundaries/scotland_border.gpkg')
 
 
 
 
 # Attach local authority areas ----------
 
-data_zone_council_lu <- read_csv('~/OneDrive - SRUC/Data/lookup/Datazone_council_lookup.csv')
+data_zone_council_lu <- read_csv('Data/lookup/Datazone_council_lookup.csv')
 
-la_codes <- read_csv('~/OneDrive - SRUC/Data/lookup/Local_Authority_Districts_Codes_Names.csv')
+la_codes <- read_csv('Data/lookup/Local_Authority_Districts_Codes_Names.csv')
 
 scotland_la_codes <- la_codes %>% 
   select(Council = LAD17CD, 
@@ -215,7 +218,7 @@ highland_everyday_map <- tm_shape(highland_border)+
   )
 
 tmap_save(highland_everyday_map, 
-          filename = '~/OneDrive - SRUC/scotland_ncr/report_outputs/figures/highland_everyday_map.pdf', 
+          filename = 'scotland_ncr/report_outputs/figures/highland_everyday_map.pdf', 
           width = 210, 
           height = 297, 
           unit = 'mm')
@@ -266,7 +269,7 @@ argyll_everyday_map <- tm_shape(argyll_border)+
   )
 
 tmap_save(argyll_everyday_map, 
-          filename = '~/OneDrive - SRUC/scotland_ncr/report_outputs/figures/argyll_everyday_map.pdf', 
+          filename = 'scotland_ncr/report_outputs/figures/argyll_everyday_map.pdf', 
           width = 210, 
           height = 297, 
           unit = 'mm')

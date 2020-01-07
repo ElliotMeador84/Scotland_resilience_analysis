@@ -1,0 +1,19 @@
+MiniScale Release 21
+
+v1.0 (12th November 2018)
+
+CONTENT CHANGES:
+
+Settlement update in the “Other towns” category with about 25 additional localities.
+
+Roads updated to November 2018. Roads under construction that are due to open during 2019 have been shown as open.
+
+SPECIFICATION CHANGES:
+
+Other A-Road pink reduced by 5% to 50% magenta.
+
+FORMAT CHANGES (Illustrator master file):
+
+The "Roads - Primary A-Rd" layer now features sublayers for dual carriageways. The dual carriageway style is applied using a layer style to improve junction depiction. Green junction dots now with this group of sublayers to keep all related detail together.
+
+Motorways have also had a layer style applied for the same reasons as dual carriageways.

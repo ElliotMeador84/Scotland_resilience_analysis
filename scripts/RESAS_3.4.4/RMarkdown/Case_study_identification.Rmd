@@ -1,0 +1,70 @@
+---
+title: "Scotland-Sparsely-Populated"
+author: "Elliot Meador"
+date: "07/01/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Overview
+This file contains analysis for identifying low-level changes in population for use in identifying potential case study areas for RESAS 3.4.4. It combines the Scottish Resilience Indicators dataset with the Scottish Sparsely Populated Areas dataset. 
+
+
+## Data
+1. Sparsely populated data files can be accessed [here](https://www.hutton.ac.uk/research/projects/demographic-change-remote-areas).
+2. Jon's Shiny App can be accessed [here](https://mappingrd342.shinyapps.io/mappingtool/).
+3. Population estimates can be found at [National Records of Scotland](https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/population/population-estimates).
+
+```{r Sparsely-Pop, warning=F, message=F, fig.height=10, fig.width=6}
+library(tidyverse)
+library(janitor)
+
+library(sf)
+library(tmap)
+
+sparse_pop <- read_csv('/Users/emeador/OneDrive - SRUC/Data/resilience/RD_3.4.1_sparsely_pop.txt') %>% 
+    clean_names()
+
+
+OutputArea2011 <- st_read('/Users/emeador/OneDrive - SRUC/Data/geographic/boundaries/output_areas/OutputArea2011_EoR.shp', 
+                          quiet = T)
+
+scotland_border <- st_read('/Users/emeador/OneDrive - SRUC/Data/geographic/boundaries/scotland_border.gpkg', 
+                           quiet = T)
+
+
+sparse_pop_sf <- OutputArea2011 %>% 
+    rename(oa11code = code) %>% 
+    left_join(sparse_pop) %>% 
+    mutate(post_pre = str_sub(masterpc, 1, 2), 
+           SPA = str_detect(spaflag, '^SPA'), 
+          subregion_6 = str_remove_all(subregion_6, 'SPA'), 
+          subregion_6 = str_squish(subregion_6))
+
+
+sparse_only <- sparse_pop_sf %>% 
+  filter(SPA == T) %>% 
+  group_by(subregion_6) %>% 
+  summarise()
+
+
+
+tm_shape(scotland_border)+
+  tm_borders()+
+tm_shape(sparse_only)+
+    tm_fill('subregion_6', 
+            alpha = .85, 
+            legend.show = F)+
+  tm_text('subregion_6', 
+          xmod = 2, 
+          ymod=2)+
+  tm_layout(title = 'Scottish SPA and its sub-regions (reproduced)')
+    
+```
+

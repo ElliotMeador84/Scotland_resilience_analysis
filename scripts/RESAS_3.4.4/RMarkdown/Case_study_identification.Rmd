@@ -28,6 +28,15 @@ library(janitor)
 library(sf)
 library(tmap)
 
+library(glue)
+
+post_theme <- function(...){
+  theme_minimal()+
+  theme(...)
+}
+
+
+
 sparse_pop <- read_csv('/Users/emeador/OneDrive - SRUC/Data/resilience/RD_3.4.1_sparsely_pop.txt') %>% 
     clean_names()
 
@@ -53,11 +62,10 @@ sparse_only <- sparse_pop_sf %>%
   group_by(subregion_6) %>% 
   summarise()
 
-
-
-tm_shape(scotland_border)+
-  tm_borders()+
-tm_shape(sparse_only)+
+sparsely_pop_map <- 
+  tm_shape(scotland_border)+
+   tm_borders()+
+  tm_shape(sparse_only)+
     tm_fill('subregion_6', 
             alpha = .85, 
             legend.show = F)+
@@ -66,5 +74,56 @@ tm_shape(sparse_only)+
           ymod=2)+
   tm_layout(title = 'Scottish SPA and its sub-regions (reproduced)')
     
+tmap_save(sparsely_pop_map, 
+          filename = 'pdf/maps/sparsely_pop_map.pdf', 
+          width = 7, 
+          height = 11)
+
+sparsely_pop_map
 ```
+
+
+```{r}
+
+scotland_pop <- read_csv('/Users/emeador/OneDrive - SRUC/Data/population/small_area/scotland_small_area_2005_2018_tidy.csv')
+
+skye_pop_change <- scotland_pop %>% 
+  select(data_zone, data_zone_name, year, population) %>% 
+  filter(str_detect(data_zone_name, 'Skye')) %>% 
+   arrange(data_zone, year) %>% 
+  group_by(data_zone) %>% 
+  mutate(base_year = case_when(
+    year == min(year) ~ population, 
+    T ~ NA_real_
+  )) %>% 
+  fill(base_year, .direction = 'down') %>% 
+  mutate(diff = population - base_year)
+
+
+
+
+skye_pop_change %>% 
+  ggplot(aes(year, diff, color = data_zone))+
+  geom_hline(yintercept = 0)+
+  geom_line(show.legend = F)+
+  geom_point(show.legend = F)+
+  scale_x_continuous(breaks = 2005:2018)+
+  post_theme(panel.grid = element_blank(), 
+             text = element_text(family = 'serif'), 
+             plot.margin = margin(.5, .5, .5, .5, 'cm'))+
+  labs(title = 'Ilse of Skye - Low level population change overtime 2005 - 2018', 
+       subtitle = ' SOURCE: National Records of Scotland*', 
+       y = 'Change from 2005 (# of people)', 
+       caption = 'Each line represents a 2011 datazone, and all populations are aggregated to 2011 datazones.\n*Data are from mid-year estimates.')
+```
+
+
+
+
+
+
+
+
+
+
 

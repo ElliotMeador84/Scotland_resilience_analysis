@@ -2,7 +2,7 @@
 title: "Scotland-Sparsely-Populated"
 author: "Elliot Meador"
 date: "07/01/2020"
-output: html_document
+output: pdf_document
 editor_options: 
   chunk_output_type: console
 ---
@@ -24,15 +24,21 @@ This file contains analysis for identifying low-level changes in population for 
 ```{r Sparsely-Pop, warning=F, message=F, fig.height=10, fig.width=6}
 library(tidyverse)
 library(janitor)
+library(patchwork)
 
 library(sf)
 library(tmap)
-
+library(ggrepel)
 library(glue)
+library(paletteer)
 
 post_theme <- function(...){
   theme_minimal()+
-  theme(...)
+  theme(
+    plot.caption = element_text(hjust = 0, face= "italic"), 
+    plot.title.position = "plot",  
+    plot.caption.position =  "plot",
+    ...)
 }
 
 
@@ -99,24 +105,118 @@ skye_pop_change <- scotland_pop %>%
   fill(base_year, .direction = 'down') %>% 
   mutate(diff = population - base_year)
 
+paletteer::palettes_d_names %>% 
+  as_tibble() %>% 
+  View()
+
+cols <- paletteer_d("RColorBrewer::Accent")
+
+data_zone_cols <- colorRampPalette(
+  cols
+  )(length(2005:2018))
+
+names(data_zone_cols) <-
+  skye_pop_change %>% 
+  distinct(data_zone) %>% 
+  pull()
 
 
 
-skye_pop_change %>% 
+(skye_pop_gg <- skye_pop_change %>% 
+  ungroup() %>% 
+  mutate(data_zone = 
+           fct_reorder(data_zone, 
+                       diff, 
+                       tail, 
+                       n = 1, 
+                       .desc = TRUE)) %>% 
   ggplot(aes(year, diff, color = data_zone))+
   geom_hline(yintercept = 0)+
-  geom_line(show.legend = F)+
-  geom_point(show.legend = F)+
+  geom_line(size = 1.5, 
+            show.legend = T)+
+  geom_point(size = 4.5, 
+             show.legend = T)+
   scale_x_continuous(breaks = 2005:2018)+
+  scale_color_manual(values = data_zone_cols, 
+                     name = 'Datazone name')+
   post_theme(panel.grid = element_blank(), 
              text = element_text(family = 'serif'), 
              plot.margin = margin(.5, .5, .5, .5, 'cm'))+
   labs(title = 'Ilse of Skye - Low level population change overtime 2005 - 2018', 
        subtitle = ' SOURCE: National Records of Scotland*', 
+       x = 'Year', 
        y = 'Change from 2005 (# of people)', 
-       caption = 'Each line represents a 2011 datazone, and all populations are aggregated to 2011 datazones.\n*Data are from mid-year estimates.')
-```
+       caption = 'Each line represents a 2011 datazone, and all populations are aggregated to 2011 datazones.\n*Data are from mid-year estimates.' ))
 
+ggsave(skye_pop_gg, filename = '/Users/emeador/Documents/R/Scotland_resilience_analysis/png/skye_pop_change.png', width = 8, height = 8, dpi = 500)
+
+system('open /Users/emeador/Documents/R/Scotland_resilience_analysis/png/skye_pop_change.png')
+
+
+scotland_data_zone_2011 <- st_read('/Users/emeador/OneDrive - SRUC/Data/geographic/boundaries/scotland_data_zone_2011.gpkg')
+
+
+sky_geo <- scotland_data_zone_2011 %>% 
+  filter(str_detect(data_zone_name, 'Skye')) %>% 
+  mutate(data_zone = as.factor(data_zone))
+
+
+skye_map <- ggplot(sky_geo)+
+  geom_sf(aes(fill = data_zone), 
+          show.legend = F)+
+    geom_sf_label(aes(label = data_zone), 
+                  size = 1.75, 
+                  position = position_dodge(width = .1)) +
+  scale_fill_manual(values = data_zone_cols)+
+  post_theme(panel.grid = element_blank(), 
+             text = element_text(family = 'serif'), 
+             plot.margin = margin(.5, .5, .5, .5, 'cm'))+
+  labs(title = 'Skye 2011 Datazone Map', 
+       subtitle = 'SOURCE: Scottish Government', 
+       caption = 'Colours correspond to Ilse of Skye - Low level population change overtime 2005 - 2018 figure')
+
+ggsave(skye_map, filename = '/Users/emeador/Documents/R/Scotland_resilience_analysis/png/skye_map.png', 
+       width = 8, 
+       height = 8, 
+       dpi = 500)
+
+system('open /Users/emeador/Documents/R/Scotland_resilience_analysis/png/skye_map.png')
+
+skye_map + 
+  skye_pop_gg +
+  plot_annotation(title = 'Skye population change and area')
+
+skye_pop_change_2018 <- skye_pop_change %>% 
+  filter(year == max(year)) %>% 
+  arrange(data_zone, year) %>% 
+  select(data_zone, diff) 
+  
+
+sky_geo_change <- sky_geo %>% 
+  left_join(skye_pop_change_2018, 
+            by = 'data_zone')
+  
+skye_diff_map <- ggplot(sky_geo_change)+
+  geom_sf(aes(fill = diff, 
+              color = diff), 
+          show.legend = T)+
+  scale_fill_gradientn(colors = paletteer_d("RColorBrewer::Spectral"), 
+                       name = 'Change from\n 2005'
+  )+
+  scale_color_gradientn(colors = paletteer_d("RColorBrewer::Spectral")
+  , guide = guide_colorbar())+
+  post_theme(panel.grid = element_blank())+
+  labs(title = 'Ilse of Skye - Population change', 
+       subtitle = 'SOURCE: National Records of Scotland', 
+       caption = 'Most population change happens in and around Portree.')
+
+ggsave(skye_diff_map, 
+       filename = '/Users/emeador/Documents/R/Scotland_resilience_analysis/png/maps/skye_diff_map.png', 
+       width = 6, height = 6, dpi = 500)
+
+system('open /Users/emeador/Documents/R/Scotland_resilience_analysis/png/maps/skye_diff_map.png')
+
+```
 
 
 

@@ -418,7 +418,9 @@ resilience_median %>%
         legend.position = 'bottom', 
         legend.text = element_text(angle  = 45, 
                                    hjust = 1), 
-        plot.margin = margin(1,1,1,1, 'cm'))+ 
+        plot.margin = margin(1,1,1,1, 'cm'), 
+        axis.text.y = element_text(size = 12.5, 
+                                   color = 'black'))+ 
   guides(fill = guide_colorbar(reverse=T))+
   labs(x = 'Rural/Urban Class.',
        y = NULL)
